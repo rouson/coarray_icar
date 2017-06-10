@@ -26,26 +26,70 @@ contains
       character(len=*), intent(in) :: file_name
       integer :: nx,ny,nz
       integer :: my_unit,stat
-      character(len=64) error_message
+      character(len=64) error_message,initial_conditions
       namelist/grid/ nx,ny,nz
+      namelist/input_files/ initial_conditions
+      enum, bind(C)
+         enumerator grid_list,input_files_list
+      end enum
+      logical :: namelist_found(grid_list:input_files_list)
+
+      namelist_found=.false.
 
       open(file=file_name,newunit=my_unit,iostat=stat,status='old',action='read')
-      write(error_message,*) "image ",this_image()," could not open file " // trim(file_name)
-      if (assertions) call assert(stat==0,error_message)
+      if (assertions) then
+        write(error_message,*) "image ",this_image()," could not open file " // trim(file_name)
+        call assert(stat==0,error_message)
+      end if
 
-      read(unit=my_unit,nml=grid,iostat=stat)
-      write(error_message,*)"image ",this_image()," could not read file " // trim(file_name)
-      if (assertions) call assert(stat==0,error_message)
+      call read_namelists
 
       close(my_unit,iostat=stat)
-      write(error_message,*)"image ",this_image()," could not close file " // trim(file_name)
-      if (assertions) call assert(stat==0,error_message)
+      if (assertions) then
+        write(error_message,*)"image ",this_image()," could not close file " // trim(file_name)
+        call assert(stat==0,error_message)
+      end if
 
-      this%nx = nx
-      this%ny = my_ny(ny)
-      this%nz = nz
-      print *,"call master_initialize(this)"
-      call master_initialize(this)
+      if (namelist_found(input_files_list)) then
+        call read_netcdf_file
+      else
+        this%nx = nx
+        this%ny = my_ny(ny)
+        this%nz = nz
+        print *,"call master_initialize(this)"
+        call master_initialize(this)
+      end if
+
+    contains
+      subroutine read_namelists()
+
+        read(unit=my_unit,nml=grid,iostat=stat)
+        if (assertions) then
+          write(error_message,*) &
+            "image ",this_image()," did not find namelist 'grid' in file " // trim(file_name)
+          call assert(stat==0,error_message)
+          namelist_found(grid_list)=.true.
+        end if
+
+        read(unit=my_unit,nml=input_files,iostat=stat)
+        if (stat==0) then
+          namelist_found(input_files_list)=.true.
+        else
+          print*,"Image ",this_image()," did not find namelist 'input_files' in file ", trim(file_name),"- Using default values"
+        end if
+
+      end subroutine
+
+      subroutine  read_netcdf_file()
+        use io_routines, only : io_write
+        open(file=initial_conditions,newunit=my_unit,iostat=stat,status='old',action='read')
+        if (assertions) then
+          write(error_message,*) "image ",this_image()," could not open file " // trim(initial_conditions)
+          call assert(stat==0,error_message)
+        end if
+        error stop "Unimplemented: read netcdf file named in 'initial_conditions' character variable."
+      end subroutine
+
     end subroutine
 
     module subroutine default_initialize(this)
