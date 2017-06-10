@@ -1,1 +1,2 @@
-  &grid nx=200,ny=200,nz=20 /
+&grid nx=200,ny=200,nz=20 /
+&input_files initial_conditions="step-function.nc" /
