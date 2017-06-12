@@ -65,7 +65,7 @@ enable_testing()
 
 set(tests_root ${CMAKE_CURRENT_BINARY_DIR}/src/tests)
 
-# Define a function for adding MPI tests comprised of running compiled programs 
+# Define a function for adding MPI tests comprised of running compiled programs
 # and checking their output for the string "Test passed."
 function(add_mpi_test name num_mpi_proc path)
   set(test_parameters ${MPIEXEC_NUMPROC_FLAG} ${num_mpi_proc} )
@@ -73,6 +73,12 @@ function(add_mpi_test name num_mpi_proc path)
   set_property(TEST ${name} PROPERTY PASS_REGULAR_EXPRESSION "Test passed.")
 endfunction(add_mpi_test)
 
-# Invoke the above function with the following arguments: 
+# Invoke the above function with the following arguments:
 # test name, compiled program name, number of images, path to program:
 add_mpi_test(initialization_test initialization-test 4  ${CMAKE_BINARY_DIR}/src/tests/initialization-test)
+
+# Search for NetCDF installation
+include(cmake-scripts/cmake-modules/FindNetCDF.cmake)
+if(NOT NETCDF_FOUND)
+  message(FATAL_ERROR "NetCDF installation not found.")
+endif()

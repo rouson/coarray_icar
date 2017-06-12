@@ -16,3 +16,4 @@ add_library( icar_utils
 )
 
 install(TARGETS icar_utils DESTINATION lib)
+target_link_libraries(icar_utils netcdf)
