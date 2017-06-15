@@ -76,9 +76,3 @@ endfunction(add_mpi_test)
 # Invoke the above function with the following arguments:
 # test name, compiled program name, number of images, path to program:
 add_mpi_test(initialization_test initialization-test 4  ${CMAKE_BINARY_DIR}/src/tests/initialization-test)
-
-# Search for NetCDF installation
-include(cmake-scripts/cmake-modules/FindNetCDF.cmake)
-if(NOT NETCDF_FOUND)
-  message(FATAL_ERROR "NetCDF installation not found.")
-endif()

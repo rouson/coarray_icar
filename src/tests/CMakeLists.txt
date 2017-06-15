@@ -15,7 +15,7 @@ add_executable( plane-wave
   ../objects/exchangeable_interface.f90
 )
 target_link_libraries(initialization-test icar_utils)
-target_link_libraries(plane-wave icar_utils)
+target_link_libraries(plane-wave icar_utils io_routines)
 
 configure_file(input-parameters.txt ${CMAKE_BINARY_DIR}/input-parameters.txt COPYONLY)
 
